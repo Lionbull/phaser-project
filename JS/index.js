@@ -31,6 +31,7 @@ let lava;
 let ground;
 let cursors;
 let enemy;
+let flag;
 let score;
 let gameOver = false;
 
@@ -40,6 +41,7 @@ function preload () {
 
 
     this.load.image("sky", "../assets/sky.png");
+    this.load.image("flag", "../assets/flag.png");
     this.load.image("platform", "../assets/platform.png");
     this.load.image("wall", "../assets/wall.png");
     this.load.image("ground", "../assets/ground.png");
@@ -96,7 +98,10 @@ function create () {
     this.physics.add.collider(enemy, platforms);
     this.physics.add.collider(enemy, ground);
 
+
     this.physics.add.collider(player, lava, hitLava, null, this);
+
+    this.physics.add.collider(player, flag, win, null, this);
     
 }
 
@@ -122,6 +127,7 @@ function hitEnemy() {
 function createPlatforms() {
     platforms = this.physics.add.staticGroup();
     lava = this.physics.add.staticGroup();
+    flag = this.physics.add.staticGroup();
     
     // Creating the ground
     platforms.create(400, 590, 'ground').setScale(2).refreshBody();
@@ -145,8 +151,8 @@ function createPlatforms() {
     platform1_s2.displayWidth = 400;
 
     lava1_s2 = lava.create(335, 576, 'lava');
-    lava1_s2.setSize(170, 35);
-    lava1_s2.displayWidth = 170;
+    lava1_s2.setSize(150, 35);
+    lava1_s2.displayWidth = 150;
 
     lava2_s2 = lava.create(550, 576, 'lava');
     lava2_s2.setSize(80, 35);
@@ -185,10 +191,10 @@ function createPlatforms() {
     dot1_s2.displayWidth = 5;
     dot1_s2.displayHeight = 5;
 
-    lava5_s2 = lava.create(592, 434, 'lava');
-    lava5_s2.setSize(260, 20);
+    lava5_s2 = lava.create(592, 433, 'lava');
+    lava5_s2.setSize(260, 22);
     lava5_s2.displayWidth = 260;
-    lava5_s2.displayHeight = 20;
+    lava5_s2.displayHeight = 22;
 
     wall4_s2 = platforms.create(550, 100, 'wall');
     wall4_s2.setSize(10, 70);
@@ -209,6 +215,10 @@ function createPlatforms() {
     dot3_s2.setSize(10, 5);
     dot3_s2.displayWidth = 5;
     dot3_s2.displayHeight = 5;
+
+    // Goal
+    goal = flag.create(1060, 530, 'flag');
+    goal.setSize(20, 20);
 
 }
 
@@ -245,7 +255,7 @@ function createPlayerAnimations() {
 
 // Function for creating player
 function createPlayer() {
-    player = this.physics.add.sprite(300, 0, 'warrior')
+    player = this.physics.add.sprite(100, 500, 'warrior')
     player.setBounce(0.1);
     player.setCollideWorldBounds(true);
     player.displayWidth = 48;
@@ -291,5 +301,13 @@ function hitLava() {
 
     gameOver = true;
 
-    this.input.on("pointerdown", () => preload());
+}
+
+// Function for winning the game
+function win() {
+    this.physics.pause();
+
+    player.setTint(0x00ff00);
+
+    gameOver = true;
 }
