@@ -27,6 +27,7 @@ const config = {
 
 let player;
 let platforms;
+let lava;
 let ground;
 let cursors;
 let enemy;
@@ -39,9 +40,10 @@ function preload () {
 
 
     this.load.image("sky", "../assets/sky.png");
-    this.load.image("platform", "../assets/platform.png")
-    this.load.image("wall", "../assets/wall.png")
-    this.load.image("ground", "../assets/ground.png")
+    this.load.image("platform", "../assets/platform.png");
+    this.load.image("wall", "../assets/wall.png");
+    this.load.image("ground", "../assets/ground.png");
+    this.load.image("lava", "../assets/lava.png");
     this.load.spritesheet({
         key: 'warrior',
         url: '../assets/warrior.png',
@@ -94,7 +96,7 @@ function create () {
     this.physics.add.collider(enemy, platforms);
     this.physics.add.collider(enemy, ground);
 
-    this.physics.add.collider(player, enemy, hitEnemy, null, this);
+    this.physics.add.collider(player, lava, hitLava, null, this);
     
 }
 
@@ -115,9 +117,11 @@ function hitEnemy() {
 }
 
 
+
 // Function for creating platforms
 function createPlatforms() {
     platforms = this.physics.add.staticGroup();
+    lava = this.physics.add.staticGroup();
     
     // Creating the ground
     platforms.create(400, 590, 'ground').setScale(2).refreshBody();
@@ -140,6 +144,22 @@ function createPlatforms() {
     platform1_s2.setSize(400, 35);
     platform1_s2.displayWidth = 400;
 
+    lava1_s2 = lava.create(335, 576, 'lava');
+    lava1_s2.setSize(170, 35);
+    lava1_s2.displayWidth = 170;
+
+    lava2_s2 = lava.create(550, 576, 'lava');
+    lava2_s2.setSize(80, 35);
+    lava2_s2.displayWidth = 80;
+
+    lava3_s2 = lava.create(700, 576, 'lava');
+    lava3_s2.setSize(80, 35);
+    lava3_s2.displayWidth = 80;
+
+    lava4_s2 = lava.create(900, 576, 'lava');
+    lava4_s2.setSize(80, 35);
+    lava4_s2.displayWidth = 200;
+
     wall1_s2 = platforms.create(450, 180, 'wall');
     wall1_s2.setSize(35, 500);
     wall1_s2.displayHeight = 500;
@@ -148,11 +168,11 @@ function createPlatforms() {
     wall2_s2.setSize(35, 200);
     wall2_s2.displayHeight = 200;
 
-    wall3_s2 = platforms.create(950, 310, 'wall');
+    wall3_s2 = platforms.create(1000, 310, 'wall');
     wall3_s2.setSize(35, 500);
     wall3_s2.displayHeight = 500;
 
-    platform2_s2 = platforms.create(930, 500, 'platform');
+    platform2_s2 = platforms.create(980, 500, 'platform');
     platform2_s2.setSize(10, 35);
     platform2_s2.displayWidth = 10;
 
@@ -164,6 +184,11 @@ function createPlatforms() {
     dot1_s2.setSize(5, 5);
     dot1_s2.displayWidth = 5;
     dot1_s2.displayHeight = 5;
+
+    lava5_s2 = lava.create(592, 434, 'lava');
+    lava5_s2.setSize(260, 20);
+    lava5_s2.displayWidth = 260;
+    lava5_s2.displayHeight = 20;
 
     wall4_s2 = platforms.create(550, 100, 'wall');
     wall4_s2.setSize(10, 70);
@@ -179,6 +204,11 @@ function createPlatforms() {
     dot2_s2.setSize(10, 10);
     dot2_s2.displayWidth = 10;
     dot2_s2.displayHeight = 10;
+
+    dot3_s2 = platforms.create(900, 85, 'platform');
+    dot3_s2.setSize(10, 5);
+    dot3_s2.displayWidth = 5;
+    dot3_s2.displayHeight = 5;
 
 }
 
@@ -204,12 +234,18 @@ function createPlayerAnimations() {
         frames: this.anims.generateFrameNumbers('warrior', { start: 20, end: 30}),
         frameRate: 30
     });
+
+    this.anims.create({
+        key: 'die',
+        frames: this.anims.generateFrameNumbers('warrior', { start: 40, end: 49}),
+        frameRate: 30
+    });
 }
 
 
 // Function for creating player
 function createPlayer() {
-    player = this.physics.add.sprite(800, 0, 'warrior')
+    player = this.physics.add.sprite(300, 0, 'warrior')
     player.setBounce(0.1);
     player.setCollideWorldBounds(true);
     player.displayWidth = 48;
@@ -235,7 +271,7 @@ function playerControl() {
     else
     {
         player.setVelocityX(0);
-
+        
         player.anims.play('stand');
     }
 
@@ -243,4 +279,17 @@ function playerControl() {
     {
         player.setVelocityY(-275);
     }
+}
+
+// Function for player dying when hit the lava
+function hitLava() {
+    player.anims.play('die');
+    
+    this.physics.pause();
+
+    player.setTint(0xff0000);
+
+    gameOver = true;
+
+    this.input.on("pointerdown", () => preload());
 }
