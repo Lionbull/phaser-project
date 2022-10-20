@@ -30,7 +30,7 @@ let platforms;
 let lava;
 let ground;
 let cursors;
-let enemy;
+let skeleton;
 let flag;
 let score;
 let gameOver = false;
@@ -41,6 +41,7 @@ function preload () {
 
 
     this.load.image("sky", "../assets/sky.png");
+    this.load.image("moving_platform", "../assets/moving_platform.png");
     this.load.image("flag", "../assets/flag.png");
     this.load.image("platform", "../assets/platform.png");
     this.load.image("wall", "../assets/wall.png");
@@ -55,7 +56,7 @@ function preload () {
         }
     });
     this.load.spritesheet({
-        key: 'enemy',
+        key: 'skeleton',
         url: '../assets/skeleton.png',
         frameConfig: {
             frameWidth: 32,
@@ -81,27 +82,31 @@ function create () {
     cursors = this.input.keyboard.createCursorKeys();
 
 
-    enemy = this.physics.add.image(200, 100, "enemy");
-    enemy.displayWidth = 48
-    enemy.displayHeight = 48
+    skeleton = this.physics.add.image(275, 0, "skeleton");
+    skeleton.displayWidth = 48
+    skeleton.displayHeight = 48
 
-    enemy.setVelocity(200);
-    enemy.setBounce(1, 0.2);
-    enemy.setCollideWorldBounds(true)
-    enemy.setSize(20, 32);
+    skeleton.setVelocity(25);
+    skeleton.setBounce(0.2, 0.2);
+    skeleton.setCollideWorldBounds(true)
+    skeleton.setSize(20, 32);
 
     
     // Making the player and enemies to collide the platforms
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, ground);
     
-    this.physics.add.collider(enemy, platforms);
-    this.physics.add.collider(enemy, ground);
+    this.physics.add.collider(skeleton, platforms);
+    this.physics.add.collider(skeleton, ground);
+
+    this.physics.add.collider(player, this.moving_platform1_s1);
 
 
     this.physics.add.collider(player, lava, hitLava, null, this);
 
     this.physics.add.collider(player, flag, win, null, this);
+
+    this.physics.add.collider(skeleton, lava, hitLavaSkeleton, null, this);
     
 }
 
@@ -117,7 +122,7 @@ function collectSomething() {
 }
 
 
-function hitEnemy() {
+function hitskeleton() {
     console.log("Hit!")
 }
 
@@ -128,7 +133,19 @@ function createPlatforms() {
     platforms = this.physics.add.staticGroup();
     lava = this.physics.add.staticGroup();
     flag = this.physics.add.staticGroup();
-    
+    let moving_platform1_s1 = this.physics.add.image(70, 570, "moving_platform").setImmovable(true);
+    moving_platform1_s1.body.setAllowGravity(false);
+
+    this.tweens.timeline({
+        targets: moving_platform1_s1.body.velocity,
+        loop: -1,
+        tweens: [
+            { x:    0, y: -100, duration: 4000, ease: 'Stepped' },
+            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
+            { x:    0, y:  100, duration: 4000, ease: 'Stepped' },
+            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },]
+        });
+
     // Creating the ground
     platforms.create(400, 590, 'ground').setScale(2).refreshBody();
 
@@ -137,13 +154,14 @@ function createPlatforms() {
     wall1_s1.setSize(35, 500);
     wall1_s1.displayHeight = 500;
 
-    platform2_s1 = platforms.create(200, 250, 'platform');
+    platform1_s1 = platforms.create(200, 250, 'platform');
     platform2_s1 = platforms.create(200, 450, 'platform');
-    platform2_s1 = platforms.create(200, 250, 'platform');
 
-    platform3_s1 = platforms.create(50, 350, 'platform');
+    
 
-    platform4_s1 = platforms.create(50, 150, 'platform');
+    //platform3_s1 = platforms.create(50, 350, 'platform');
+
+    //platform4_s1 = platforms.create(50, 150, 'platform');
 
     // Section 2
     platform1_s2 = platforms.create(600, 440, 'platform');
@@ -255,7 +273,7 @@ function createPlayerAnimations() {
 
 // Function for creating player
 function createPlayer() {
-    player = this.physics.add.sprite(100, 500, 'warrior')
+    player = this.physics.add.sprite(250, 0, 'warrior')
     player.setBounce(0.1);
     player.setCollideWorldBounds(true);
     player.displayWidth = 48;
@@ -301,6 +319,12 @@ function hitLava() {
 
     gameOver = true;
 
+}
+
+// Skeleton hitting lava to show player that it is dangerous
+function hitLavaSkeleton() {
+    skeleton.setTint(0xff0000);
+    skeleton.setVelocity(0);
 }
 
 // Function for winning the game
