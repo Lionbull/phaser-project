@@ -33,14 +33,19 @@ let cursors;
 let skeleton;
 let flag;
 let score;
+let fireball;
+let jump_sound;
+let death_sound;
+let soundtrack
 let gameOver = false;
 
 const game = new Phaser.Game(config);
 
 function preload () {
 
-
+    // Textures
     this.load.image("sky", "../assets/sky.png");
+    this.load.image("fireball", "../assets/fireball.png");
     this.load.image("moving_platform", "../assets/moving_platform.png");
     this.load.image("flag", "../assets/flag.png");
     this.load.image("platform", "../assets/platform.png");
@@ -63,13 +68,19 @@ function preload () {
             frameHeight: 32
         }
     });
+
+    //Sounds
+    this.load.audio("jump", "../assets/jump.mp3");
+    this.load.audio("death", "../assets/death.mp3");
+    this.load.audio("soundtrack", "../assets/soundtrack.mp3");
 }
 
 function create () {
     this.add.image(400, 300, "sky");
 
+
     // Creating platforms
-    createPlatforms.call(this);
+    let moving_platform = createPlatforms.call(this);
     
 
     // Creating a player warrior
@@ -78,9 +89,13 @@ function create () {
     // Annimations for the player
     createPlayerAnimations.call(this);
 
+    // Creating fireballs
+    for(let i = 0; i < 10; i++){
+        createFireballs.call(this);};
+    //setInterval(createFireballs, 2000);
+
     // Allowing user to control the players
     cursors = this.input.keyboard.createCursorKeys();
-
 
     skeleton = this.physics.add.image(275, 0, "skeleton");
     skeleton.displayWidth = 48
@@ -102,11 +117,15 @@ function create () {
     this.physics.add.collider(player, this.moving_platform1_s1);
 
 
-    this.physics.add.collider(player, lava, hitLava, null, this);
+    this.physics.add.collider(player, lava, playerDie, null, this);
 
     this.physics.add.collider(player, flag, win, null, this);
 
     this.physics.add.collider(skeleton, lava, hitLavaSkeleton, null, this);
+
+    this.physics.add.collider(player, moving_platform);
+
+    this.physics.add.collider(player, fireball, playerDie, null, this);
     
 }
 
@@ -133,17 +152,17 @@ function createPlatforms() {
     platforms = this.physics.add.staticGroup();
     lava = this.physics.add.staticGroup();
     flag = this.physics.add.staticGroup();
-    let moving_platform1_s1 = this.physics.add.image(70, 570, "moving_platform").setImmovable(true);
+    let moving_platform1_s1 = this.physics.add.image(70, 580, "moving_platform").setImmovable(true).setVelocity(100, -100);
     moving_platform1_s1.body.setAllowGravity(false);
 
     this.tweens.timeline({
         targets: moving_platform1_s1.body.velocity,
         loop: -1,
         tweens: [
+            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
             { x:    0, y: -100, duration: 4000, ease: 'Stepped' },
             { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
-            { x:    0, y:  100, duration: 4000, ease: 'Stepped' },
-            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },]
+            { x:    0, y:  100, duration: 4000, ease: 'Stepped' },]
         });
 
     // Creating the ground
@@ -154,14 +173,11 @@ function createPlatforms() {
     wall1_s1.setSize(35, 500);
     wall1_s1.displayHeight = 500;
 
-    platform1_s1 = platforms.create(200, 250, 'platform');
-    platform2_s1 = platforms.create(200, 450, 'platform');
-
     
-
-    //platform3_s1 = platforms.create(50, 350, 'platform');
-
-    //platform4_s1 = platforms.create(50, 150, 'platform');
+    platform1_s1 = platforms.create(200, 445, 'platform');
+    platform2_s1 = platforms.create(200, 350, 'platform');
+    platform3_s1 = platforms.create(200, 255, 'platform');
+    platform4_s1 = platforms.create(200, 160, 'platform');
 
     // Section 2
     platform1_s2 = platforms.create(600, 440, 'platform');
@@ -238,6 +254,7 @@ function createPlatforms() {
     goal = flag.create(1060, 530, 'flag');
     goal.setSize(20, 20);
 
+    return moving_platform1_s1;
 }
 
 
@@ -273,7 +290,7 @@ function createPlayerAnimations() {
 
 // Function for creating player
 function createPlayer() {
-    player = this.physics.add.sprite(250, 0, 'warrior')
+    player = this.physics.add.sprite(200, 500, 'warrior')
     player.setBounce(0.1);
     player.setCollideWorldBounds(true);
     player.displayWidth = 48;
@@ -306,11 +323,13 @@ function playerControl() {
     if (cursors.up.isDown && player.body.touching.down)
     {
         player.setVelocityY(-275);
+
+
     }
 }
 
 // Function for player dying when hit the lava
-function hitLava() {
+function playerDie() {
     player.anims.play('die');
     
     this.physics.pause();
@@ -334,4 +353,18 @@ function win() {
     player.setTint(0x00ff00);
 
     gameOver = true;
+}
+
+// Function for creating fireballs
+
+function createFireballs() {
+    fireballs = this.physics.add.group({
+        key: 'fireball',
+        repeat: 1,
+        setXY: { x: 30, y: 0, stepX: 60 }
+    });
+
+    fireballs.children.iterate(function (child) {
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+    });
 }
