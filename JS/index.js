@@ -98,7 +98,7 @@ function create () {
 
     // Creating fireballs
     createFireballs.call(this);
-    TimedEvent = this.time.addEvent({ delay: 3500, callback: createFireballs, callbackScope: this, loop: true });
+    TimedEvent = this.time.addEvent({ delay: 4000, callback: createFireballs, callbackScope: this, loop: true });
 
     //setInterval(createFireballs, 2000);
 
@@ -165,9 +165,9 @@ function createPlatforms() {
         loop: -1,
         tweens: [
             { x:    0, y:    0, duration: 1500, ease: 'Stepped' },
-            { x:    0, y: -100, duration: 4000, ease: 'Stepped' },
+            { x:    0, y: -130, duration: 3500, ease: 'Stepped' },
             { x:    0, y:    0, duration: 1500, ease: 'Stepped' },
-            { x:    0, y:  100, duration: 4000, ease: 'Stepped' },]
+            { x:    0, y:  130, duration: 3500, ease: 'Stepped' },]
         });
 
     // Creating the ground
