@@ -33,7 +33,7 @@ let cursors;
 let skeleton;
 let flag;
 let score;
-let fireball;
+let fireballs;
 let jump_sound;
 let death_sound;
 let soundtrack
@@ -70,9 +70,9 @@ function preload () {
     });
 
     //Sounds
-    this.load.audio("jump", "../assets/jump.mp3");
-    this.load.audio("death", "../assets/death.mp3");
-    this.load.audio("soundtrack", "../assets/soundtrack.mp3");
+    this.load.audio("jump", "../sounds/jump.mp3");
+    this.load.audio("death", "../sounds/death.mp3");
+    this.load.audio("soundtrack", "../sounds/soundtrack.mp3");
 }
 
 function create () {
@@ -81,6 +81,13 @@ function create () {
 
     // Creating platforms
     let moving_platform = createPlatforms.call(this);
+
+    // Sounds
+    jump_sound = this.sound.add("jump");
+    death_sound = this.sound.add("death");
+    soundtrack = this.sound.add("soundtrack");
+    soundtrack.play();
+    soundtrack.setVolume(0.1);
     
 
     // Creating a player warrior
@@ -90,8 +97,9 @@ function create () {
     createPlayerAnimations.call(this);
 
     // Creating fireballs
-    for(let i = 0; i < 10; i++){
-        createFireballs.call(this);};
+    createFireballs.call(this);
+    TimedEvent = this.time.addEvent({ delay: 3500, callback: createFireballs, callbackScope: this, loop: true });
+
     //setInterval(createFireballs, 2000);
 
     // Allowing user to control the players
@@ -124,9 +132,6 @@ function create () {
     this.physics.add.collider(skeleton, lava, hitLavaSkeleton, null, this);
 
     this.physics.add.collider(player, moving_platform);
-
-    this.physics.add.collider(player, fireball, playerDie, null, this);
-    
 }
 
 function update()
@@ -159,9 +164,9 @@ function createPlatforms() {
         targets: moving_platform1_s1.body.velocity,
         loop: -1,
         tweens: [
-            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
+            { x:    0, y:    0, duration: 1500, ease: 'Stepped' },
             { x:    0, y: -100, duration: 4000, ease: 'Stepped' },
-            { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
+            { x:    0, y:    0, duration: 1500, ease: 'Stepped' },
             { x:    0, y:  100, duration: 4000, ease: 'Stepped' },]
         });
 
@@ -324,20 +329,22 @@ function playerControl() {
     {
         player.setVelocityY(-275);
 
-
+        jump_sound.play();
     }
 }
 
 // Function for player dying when hit the lava
 function playerDie() {
     player.anims.play('die');
+
+    death_sound.play();
+    death_sound.setVolume(0.5);
+
+    soundtrack.stop();
     
     this.physics.pause();
-
     player.setTint(0xff0000);
-
     gameOver = true;
-
 }
 
 // Skeleton hitting lava to show player that it is dangerous
@@ -361,10 +368,11 @@ function createFireballs() {
     fireballs = this.physics.add.group({
         key: 'fireball',
         repeat: 1,
-        setXY: { x: 30, y: 0, stepX: 60 }
+        setXY: { x: 30, y: 0, stepX: 60 },
+        setSize: { x: 100, y: 64 }
     });
 
-    fireballs.children.iterate(function (child) {
-        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-    });
+    fireballs.setVelocityY(250);
+
+    this.physics.add.collider(player, fireballs, playerDie, null, this);
 }
