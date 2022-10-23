@@ -167,7 +167,7 @@ function createPlatforms() {
     platforms = this.physics.add.staticGroup();
     lava = this.physics.add.staticGroup();
     flag = this.physics.add.staticGroup();
-    let moving_platform1_s1 = this.physics.add.image(70, 580, "moving_platform").setImmovable(true).setVelocity(100, -100);
+    let moving_platform1_s1 = this.physics.add.image(67, 580, "moving_platform").setImmovable(true).setVelocity(100, -100);
     moving_platform1_s1.body.setAllowGravity(false);
 
     this.tweens.timeline({
@@ -189,10 +189,18 @@ function createPlatforms() {
     wall1_s1.displayHeight = 500;
 
     
-    platform1_s1 = platforms.create(200, 445, 'platform');
-    platform2_s1 = platforms.create(200, 350, 'platform');
-    platform3_s1 = platforms.create(200, 255, 'platform');
-    platform4_s1 = platforms.create(200, 160, 'platform');
+    platform1_s1 = platforms.create(185, 445, 'platform');
+    platform1_s1.setSize(98, 32);
+    platform1_s1.displayWidth = 98;
+    platform2_s1 = platforms.create(185, 350, 'platform');
+    platform2_s1.setSize(98, 32);
+    platform2_s1.displayWidth = 98;
+    platform3_s1 = platforms.create(185, 255, 'platform');
+    platform3_s1.setSize(98, 32);
+    platform3_s1.displayWidth = 98;
+    platform4_s1 = platforms.create(185, 160, 'platform');
+    platform4_s1.setSize(98, 32);
+    platform4_s1.displayWidth = 98;
 
     // Section 2
     platform1_s2 = platforms.create(600, 440, 'platform');
