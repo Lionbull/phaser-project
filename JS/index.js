@@ -27,12 +27,16 @@ const config = {
 
 let player;
 let platforms;
+let coins;
+let coin_sound;
+let cf;
 let lava;
 let ground;
 let cursors;
 let skeleton;
 let flag;
-let score;
+let score = 0;
+let scoreText;
 let fireballs;
 let jump_sound;
 let death_sound;
@@ -52,6 +56,8 @@ function preload () {
     this.load.image("wall", "../assets/wall.png");
     this.load.image("ground", "../assets/ground.png");
     this.load.image("lava", "../assets/lava.png");
+    this.load.image("coin", "../assets/coin.png");
+    this.load.image("crying_face", "../assets/crying_face.png");
     this.load.spritesheet({
         key: 'warrior',
         url: '../assets/warrior.png',
@@ -73,11 +79,13 @@ function preload () {
     this.load.audio("jump", "../sounds/jump.mp3");
     this.load.audio("death", "../sounds/death.mp3");
     this.load.audio("soundtrack", "../sounds/soundtrack.mp3");
+    this.load.audio("coin", "../sounds/coin.mp3");
 }
 
 function create () {
     this.add.image(400, 300, "sky");
 
+    scoreText = this.add.text(16, 16, 'Score:'+score, { fontSize: '32px', fill: '#000' });
 
     // Creating platforms
     let moving_platform = createPlatforms.call(this);
@@ -86,6 +94,7 @@ function create () {
     jump_sound = this.sound.add("jump");
     death_sound = this.sound.add("death");
     soundtrack = this.sound.add("soundtrack");
+    coin_sound = this.sound.add("coin");
     soundtrack.play();
     soundtrack.setVolume(0.1);
     
@@ -100,7 +109,15 @@ function create () {
     createFireballs.call(this);
     TimedEvent = this.time.addEvent({ delay: 4000, callback: createFireballs, callbackScope: this, loop: true });
 
-    //setInterval(createFireballs, 2000);
+    // Creating coins
+    createCoins.call(this);
+
+    // Creating crying face (help button)
+    cf = this.physics.add.staticGroup();
+    crying_face = cf.create(830, 250, 'crying_face');
+    crying_face.setSize(32, 32);
+    crying_face.displayWidth = 32;
+    crying_face.displayHeight = 32;
 
     // Allowing user to control the players
     cursors = this.input.keyboard.createCursorKeys();
@@ -132,22 +149,15 @@ function create () {
     this.physics.add.collider(skeleton, lava, hitLavaSkeleton, null, this);
 
     this.physics.add.collider(player, moving_platform);
+
+    this.physics.add.overlap(player, coins, collectCoin, null, this);
+
+    this.physics.add.overlap(player, cf, collectCryingFace, null, this);
 }
 
 function update()
 {
     playerControl.call(this);
-}
-
-
-
-function collectSomething() {
-    console.log("Collected")
-}
-
-
-function hitskeleton() {
-    console.log("Hit!")
 }
 
 
@@ -202,8 +212,8 @@ function createPlatforms() {
     lava3_s2.displayWidth = 80;
 
     lava4_s2 = lava.create(900, 576, 'lava');
-    lava4_s2.setSize(80, 35);
-    lava4_s2.displayWidth = 200;
+    lava4_s2.setSize(170, 35);
+    lava4_s2.displayWidth = 170;
 
     wall1_s2 = platforms.create(450, 180, 'wall');
     wall1_s2.setSize(35, 500);
@@ -295,7 +305,7 @@ function createPlayerAnimations() {
 
 // Function for creating player
 function createPlayer() {
-    player = this.physics.add.sprite(200, 500, 'warrior')
+    player = this.physics.add.sprite(175, 500, 'warrior')
     player.setBounce(0.1);
     player.setCollideWorldBounds(true);
     player.displayWidth = 48;
@@ -333,7 +343,7 @@ function playerControl() {
     }
 }
 
-// Function for player dying when hit the lava
+// Function for player dying
 function playerDie() {
     player.anims.play('die');
 
@@ -345,6 +355,9 @@ function playerDie() {
     this.physics.pause();
     player.setTint(0xff0000);
     gameOver = true;
+    score = 0;
+
+    this.time.delayedCall(2000, () => {this.scene.restart()}, null, this);
 }
 
 // Skeleton hitting lava to show player that it is dangerous
@@ -357,13 +370,14 @@ function hitLavaSkeleton() {
 function win() {
     this.physics.pause();
 
+    soundtrack.stop();
+
     player.setTint(0x00ff00);
 
     gameOver = true;
 }
 
 // Function for creating fireballs
-
 function createFireballs() {
     fireballs = this.physics.add.group({
         key: 'fireball',
@@ -374,5 +388,67 @@ function createFireballs() {
 
     fireballs.setVelocityY(250);
 
-    this.physics.add.collider(player, fireballs, playerDie, null, this);
+    this.physics.add.overlap(player, fireballs, playerDie, null, this);
+}
+
+// Function for creating coins
+function createCoins() {
+    coins = this.physics.add.staticGroup();
+
+    coin1 = coins.create(220, 220, 'coin');
+    coin1.setSize(32, 32);
+    coin1.displayWidth = 25;
+    coin1.displayHeight = 25;
+
+    coin2 = coins.create(220, 315, 'coin');
+    coin2.setSize(32, 32);
+    coin2.displayWidth = 25;
+    coin2.displayHeight = 25;
+
+    coin3 = coins.create(220, 410, 'coin');
+    coin3.setSize(32, 32);
+    coin3.displayWidth = 25;
+    coin3.displayHeight = 25;
+
+    coin4 = coins.create(275, 250, 'coin');
+    coin4.displayWidth = 25;
+    coin4.displayHeight = 25;
+    coin4.setSize(32, 40);
+    coin4.anims.play("coin", true);
+
+    coin5 = coins.create(965, 470, 'coin');
+    coin5.displayWidth = 25;
+    coin5.displayHeight = 25;
+    coin5.setSize(32, 32);
+
+    coin6 = coins.create(965, 200, 'coin');
+    coin6.displayWidth = 25;
+    coin6.displayHeight = 25;
+    coin6.setSize(32, 32);
+
+    return coins
+}
+
+
+// Function for colecting coins
+function collectCoin(player, coin) {
+    coin.disableBody(true, true);
+
+    coin_sound.play();
+
+    score += 100;
+    scoreText.setText('Score: ' + score);
+}
+
+// Function for collecting crying face
+function collectCryingFace(player, cryingFace) {
+    cryingFace.disableBody(true, true);
+
+    helping_platform = platforms.create(900, 85, 'platform');
+    helping_platform.setSize(150, 5);
+    helping_platform.displayWidth = 150;
+    helping_platform.displayHeight = 5;
+
+    score = -999;
+    scoreText.setText('Score: ' + score);
 }
