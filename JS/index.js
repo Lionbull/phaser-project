@@ -1,7 +1,3 @@
-//Source for 2D models: https://opengameart.org/content/animated-skeleton
-//https://opengameart.org/content/animated-warrior
-
-
 const config = {
     type: Phaser.AUTO,
     scale: {
