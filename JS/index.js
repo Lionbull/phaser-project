@@ -456,3 +456,4 @@ function collectCryingFace(player, cryingFace) {
     score = -999;
     scoreText.setText('Score: ' + score);
 }
+
